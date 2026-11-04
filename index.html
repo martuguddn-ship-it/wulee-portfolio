@@ -486,7 +486,67 @@ capo1:"Front view",capo2:"The grill in use",capo3:"Stages of use",capo4:"Height 
 
 Object.assign(T.ko,{p1_photo:"사진",p1_3d:"3D 모델",p2_photo:"사진",p2_3d:"3D 모델"});
 Object.assign(T.en,{p1_photo:"Photo",p1_3d:"3D model",p2_photo:"Photo",p2_3d:"3D model"});
-document.querySelectorAll(".f-img").forEach(function(media){var photo=media.querySelector("img"),viewer=media.querySelector(".project-viewer"),viewerSwitch=media.querySelector(".viewer-switch"),hoveredView=null;if(!photo||!viewer||!viewerSwitch)return;function moveViewerPill(target){var button=target||viewerSwitch.querySelector("[aria-pressed=true]");if(!button)return;var barRect=viewerSwitch.getBoundingClientRect(),buttonRect=button.getBoundingClientRect();viewerSwitch.style.setProperty("--pill-x",(buttonRect.left-barRect.left-viewerSwitch.clientLeft-4)+"px");viewerSwitch.style.setProperty("--pill-width",buttonRect.width+"px")}function loadProjectModel(){if(viewer.dataset.loaded||viewer.dataset.loading)return;viewer.dataset.loading="true";var source=viewer.dataset.src;var model=viewer.dataset.compressed==="gzip"?fetch(source).then(function(response){if(!response.ok)throw new Error("Could not load model");if(!window.DecompressionStream)throw new Error("This browser cannot open the compressed model");return new Response(response.body.pipeThrough(new DecompressionStream("gzip")),{headers:{"Content-Type":"model/gltf-binary"}}).blob()}).then(function(blob){return URL.createObjectURL(blob)}):Promise.resolve(source);model.then(function(src){viewer.src=src;viewer.dataset.loaded="true";delete viewer.dataset.loading}).catch(function(error){delete viewer.dataset.loading;console.error(error)})}viewerSwitch.querySelectorAll("button").forEach(function(button){button.addEventListener("click",function(){var showModel=button.dataset.view==="model";if(showModel)loadProjectModel();photo.hidden=showModel;viewer.hidden=!showModel;viewerSwitch.querySelectorAll("button").forEach(function(item){item.setAttribute("aria-pressed",String(item===button))});moveViewerPill()});button.addEventListener("pointerenter",function(){hoveredView=button;if(button.getAttribute("aria-pressed")!=="true")viewerSwitch.dataset.hovering="true";else delete viewerSwitch.dataset.hovering;moveViewerPill(button)})});viewerSwitch.addEventListener("pointerleave",function(){hoveredView=null;delete viewerSwitch.dataset.hovering;moveViewerPill()});window.addEventListener("resize",function(){moveViewerPill(hoveredView)});moveViewerPill()}););button.addEventListener("pointerenter",function(){hoveredView=button;if(button.getAttribute("aria-pressed")!=="true")viewerSwitch.dataset.hovering="true";else delete viewerSwitch.dataset.hovering;moveViewerPill(button)})});viewerSwitch.addEventListener("pointerleave",function(){hoveredView=null;delete viewerSwitch.dataset.hovering;moveViewerPill()});window.addEventListener("resize",function(){moveViewerPill(hoveredView)});moveViewerPill()}
+document.querySelectorAll(".f-img").forEach(function(media){
+  var photo=media.querySelector("img");
+  var viewer=media.querySelector(".project-viewer");
+  var viewerSwitch=media.querySelector(".viewer-switch");
+  var hoveredView=null;
+  if(!photo||!viewer||!viewerSwitch)return;
+  function moveViewerPill(target){
+    var button=target||viewerSwitch.querySelector("[aria-pressed=true]");
+    if(!button)return;
+    var barRect=viewerSwitch.getBoundingClientRect();
+    var buttonRect=button.getBoundingClientRect();
+    viewerSwitch.style.setProperty("--pill-x",(buttonRect.left-barRect.left-viewerSwitch.clientLeft-4)+"px");
+    viewerSwitch.style.setProperty("--pill-width",buttonRect.width+"px");
+  }
+  function loadProjectModel(){
+    if(viewer.dataset.loaded||viewer.dataset.loading)return;
+    viewer.dataset.loading="true";
+    var source=viewer.dataset.src;
+    var model=viewer.dataset.compressed==="gzip"
+      ? fetch(source).then(function(response){
+          if(!response.ok)throw new Error("Could not load model");
+          if(!window.DecompressionStream)throw new Error("This browser cannot open the compressed model");
+          var stream=response.body.pipeThrough(new DecompressionStream("gzip"));
+          return new Response(stream,{headers:{"Content-Type":"model/gltf-binary"}}).blob();
+        }).then(function(blob){return URL.createObjectURL(blob)})
+      : Promise.resolve(source);
+    model.then(function(src){
+      viewer.src=src;
+      viewer.dataset.loaded="true";
+      delete viewer.dataset.loading;
+    }).catch(function(error){
+      delete viewer.dataset.loading;
+      console.error(error);
+    });
+  }
+  viewerSwitch.querySelectorAll("button").forEach(function(button){
+    button.addEventListener("click",function(){
+      var showModel=button.dataset.view==="model";
+      if(showModel)loadProjectModel();
+      photo.hidden=showModel;
+      viewer.hidden=!showModel;
+      viewerSwitch.querySelectorAll("button").forEach(function(item){
+        item.setAttribute("aria-pressed",String(item===button));
+      });
+      moveViewerPill();
+    });
+    button.addEventListener("pointerenter",function(){
+      hoveredView=button;
+      if(button.getAttribute("aria-pressed")!=="true")viewerSwitch.dataset.hovering="true";
+      else delete viewerSwitch.dataset.hovering;
+      moveViewerPill(button);
+    });
+  });
+  viewerSwitch.addEventListener("pointerleave",function(){
+    hoveredView=null;
+    delete viewerSwitch.dataset.hovering;
+    moveViewerPill();
+  });
+  window.addEventListener("resize",function(){moveViewerPill(hoveredView)});
+  moveViewerPill();
+});
 var els=document.querySelectorAll("[data-i]");
 els.forEach(function(e){T.es[e.dataset.i]=e.innerHTML});
 function setLang(l){
